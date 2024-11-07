@@ -6,8 +6,8 @@ from unittest.mock import patch
 import pytest
 import serial
 
-from pyinfuse import Chain
-from pyinfuse import Pump
+from pyinfuse.pyinfuse import Chain
+from pyinfuse.pyinfuse import Pump
 
 
 @pytest.fixture
