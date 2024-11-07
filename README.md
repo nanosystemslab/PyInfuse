@@ -42,9 +42,6 @@ For more information visit [Harvard Apparatus](https://www.harvardapparatus.com/
 ## Requirements
 
 - Python <4.0, >=3.9
-- Poetry
-- Nox
-- nox-poetry
 
 ## Installation
 
@@ -65,8 +62,10 @@ To learn more, see the [Contributor Guide].
 
 ## License
 
-Distributed under the terms of the [MIT license][license],
+Distributed under the terms of the [GPL-3.0 license][license],
 _Pyinfuse_ is free and open source software.
+
+## Citation
 
 If you use this project in your research, please cite it using the following BibTeX entry:
 

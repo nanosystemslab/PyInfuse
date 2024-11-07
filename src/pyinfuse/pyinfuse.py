@@ -9,7 +9,7 @@ from typing import Dict
 import serial
 
 
-__version__ = "0.0.1"
+__version__ = "0.1.3"
 
 
 class Chain(serial.Serial):
@@ -25,8 +25,12 @@ class Chain(serial.Serial):
     logs creation of the Chain.
     """
 
-    def __init__(self, port: str):
-        """Placeholder description of constructor."""
+    def __init__(self, port: str) -> None:
+        """Initizalize the Chain class.
+
+        Args:
+            port (str): The serial port to connect to.
+        """
         serial.Serial.__init__(
             self,
             port=port,
@@ -38,18 +42,16 @@ class Chain(serial.Serial):
 
 
 class Pump:
-    """Create Pump object for Harvard Pump 11.
+    """Create Pump object."""
 
-    Argument:
-        Chain: pump chain
+    def __init__(self, chain: Chain, address: int = 0, name: str = "Pump 11") -> None:
+        """Initialize the Pump class.
 
-    Optional arguments:
-        address: pump address. Default is 0.
-        name: used in logging. Default is Pump 11.
-    """
-
-    def __init__(self, chain: Chain, address: int = 0, name: str = "Pump 11"):
-        """Placeholder description of constructor."""
+        Args:
+            chain (Chain): Pump chain.
+            address (int): Pump address (default 0).
+            name (str): The name used in logging (default 'Pump 11').
+        """
         self.name = name
         self.serialcon = chain
         self.address = f"{address:02.0f}"
@@ -80,13 +82,28 @@ class Pump:
         )
 
     def write(self, command: str) -> None:
-        """Placeholder description of method."""
+        """Write to serial.
+
+        Args:
+            command (str): The command to write to serial.
+        """
         msg_write = f"{self.address}{command}\r"
         self.serialcon.write(msg_write.encode("utf-8"))
         return None
 
     def read(self, read_bytes: int = 5) -> str:
-        """Placeholder description of method."""
+        """Read from serial.
+
+        Args:
+            read_bytes (int): The size of bytes to read from the serial port
+            (default 5).
+
+        Returns:
+            The message read from the serial port.
+
+        Raises:
+            PumpError: No response from serial port.
+        """
         response = self.serialcon.read(read_bytes).decode()
 
         if len(response) == 0:
@@ -98,8 +115,14 @@ class Pump:
         """Set syringe diameter (millimetres).
 
         Pump 11 syringe diameter range is 0.1-35 mm. Note that the pump
-        ignores precision greater than 2 decimal places. If more d.p.
-        are specificed the diameter will be truncated.
+        ignores precision greater than 2 decimal places. If more decimal places
+        are specified the diameter will be truncated.
+
+        Args:
+            diameter (str): The diameter of the syringe pump.
+
+        Raises:
+            PumpError: The diameter is invalid.
         """
         check_diameter = float(diameter)
         if check_diameter > 35 or check_diameter < 0.1:
@@ -134,6 +157,10 @@ class Pump:
 
         The pump will tell you if the specified flow rate is out of
         range. This depends on the syringe diameter. See Pump 11 manual.
+
+        Args:
+            flowrate (str): The syringe pump flow rate in uL/min.
+            units (str): The corresponding units.
         """
         flowrate = str(flowrate)
         units = str(units)
@@ -165,7 +192,11 @@ class Pump:
         return None
 
     def withdraw(self) -> None:
-        """Start withdrawing pump."""
+        """Start withdrawing pump.
+
+        Raises:
+            PumpError: Unknown response to withdraw.
+        """
         self.write("REV")
         resp = self.read(5)
 
@@ -192,9 +223,14 @@ class Pump:
         #    logging.info('%s: stopped',self.name)
         return None
 
-    def settargetvolume(self, targetvolume: str, units: str) -> None:
-        """Set the target volume to infuse or withdraw (microlitres)."""
-        msg = f"tvolume {targetvolume} {units}"
+    def settargetvolume(self, target_volume: str, units: str) -> None:
+        """Set the target volume to infuse or withdraw (microlitres).
+
+        Args:
+            target_volume (str): The volume to target.
+            units (str): The corresponding units.
+        """
+        msg = f"tvolume {target_volume} {units}"
         self.write(msg)
         resp = self.read(50)
         if "error:" in resp:
@@ -202,9 +238,13 @@ class Pump:
             print(resp)
         return None
 
-    def settargettime(self, targettime: int) -> None:
-        """Set the target time to infuse or withdraw (sec)."""
-        msg = f"ttime {targettime}"
+    def settargettime(self, target_time: int) -> None:
+        """Set the target time to infuse or withdraw (sec).
+
+        Args:
+            target_time (str): The time to target in seconds.
+        """
+        msg = f"ttime {target_time}"
 
         self.write(msg)
         resp = self.read(50)
@@ -215,7 +255,7 @@ class Pump:
 
 
 class PumpError(Exception):
-    """Placeholder description of class."""
+    """Class for raising Exceptions."""
 
     pass
 
@@ -225,7 +265,11 @@ class PumpError(Exception):
 
 
 def setup_logging(verbosity: str) -> None:
-    """Placeholder description of function."""
+    """Sets up logging.
+
+    Args:
+        verbosity (str): The desired verbosity of logging output.
+    """
     log_fmt = "%(levelname)s - %(module)s - %(funcName)s @%(lineno)d: %(message)s"
     # addl keys: asctime, module, name
     logging.basicConfig(
@@ -235,7 +279,11 @@ def setup_logging(verbosity: str) -> None:
 
 
 def parse_command_line() -> Dict[str, Any]:
-    """Placeholder description of function."""
+    """Parses the command line for commands and flags.
+
+    Returns:
+        A dictionary containing the parsed commands and arguments.
+    """
     parser = argparse.ArgumentParser(description="Analyse sensor data")
     parser.add_argument(
         "-V",
@@ -319,7 +367,11 @@ def parse_command_line() -> Dict[str, Any]:
 
 
 def main() -> str:
-    """Placeholder description of function."""
+    """Main function.
+
+    Returns:
+        A message that the chain has closed.
+    """
     cmd_args = parse_command_line()
     setup_logging(cmd_args["verbosity"])
     chain = Chain(cmd_args["address"][0])
